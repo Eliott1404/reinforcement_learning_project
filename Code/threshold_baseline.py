@@ -27,11 +27,14 @@ def run_file(excel_file, rsi_period, rsi_low, rsi_high, deriv_win, deriv_z, plot
 
     total_reward = 0.0
     cumulative = []
+    dam_level = []  # <--- NEW
 
     obs = env.observation()
     prev_price = None
 
     for _ in range(730 * 24 - 1):
+        dam_level.append(float(obs[0]))  # <--- NEW (store current volume)
+
         price = float(obs[1])
 
         if prev_price is not None:
@@ -58,6 +61,7 @@ def run_file(excel_file, rsi_period, rsi_low, rsi_high, deriv_win, deriv_z, plot
 
         obs, reward, terminated, truncated, _ = env.step(action)
         total_reward += float(reward)
+
         if plot:
             cumulative.append(total_reward)
 
@@ -65,10 +69,19 @@ def run_file(excel_file, rsi_period, rsi_low, rsi_high, deriv_win, deriv_z, plot
             break
 
     if plot:
-        plt.plot(cumulative)
+        # Plot dam level like your friend
+        plt.plot(dam_level)
+        plt.xlim(0, 1000)
         plt.xlabel("Time (Hours)")
-        plt.ylabel("Cumulative reward")
+        plt.ylabel("Dam level (volume)")
         plt.show()
+
+        # If you ALSO want cumulative reward, uncomment this:
+        # plt.figure()
+        # plt.plot(cumulative)
+        # plt.xlabel("Time (Hours)")
+        # plt.ylabel("Cumulative reward")
+        # plt.show()
 
     return total_reward
 
